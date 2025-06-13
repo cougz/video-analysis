@@ -197,7 +197,7 @@ export class PlatformNavigator {
     return { success: true };
   }
 
-  async navigateToCoursera Catalog() {
+  async navigateToCourseraCatalog() {
     await this.client.page.click('a[href*="/browse"]');
     return { success: true };
   }
@@ -219,7 +219,7 @@ export class PlatformNavigator {
 
   async navigateToGenericCatalog() {
     // Use AI to find course/catalog navigation
-    return await this.client.page.ai('click on courses or catalog menu');
+    return await this.client.agent.ai('click on courses or catalog menu');
   }
 
   async searchAndSelectCourse(courseTitle) {
@@ -277,7 +277,7 @@ export class PlatformNavigator {
       }
 
       // Fallback to AI-based navigation
-      const aiResult = await this.client.page.ai(`search for and select course titled "${courseTitle}"`);
+      const aiResult = await this.client.agent.ai(`search for and select course titled "${courseTitle}"`);
       this.navigationState.currentCourse = courseTitle;
       return { success: true };
 
@@ -385,7 +385,7 @@ export class PlatformNavigator {
       }
 
       // Fallback to AI navigation
-      const aiResult = await this.client.page.ai('click on the first video or lesson in the course');
+      const aiResult = await this.client.agent.ai('click on the first video or lesson in the course');
       return { success: true };
 
     } catch (error) {
