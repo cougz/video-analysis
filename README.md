@@ -39,6 +39,7 @@ An automated system that uses Midscene.js to navigate learning platforms and lev
 
 3. **Install Playwright browsers:**
    ```bash
+   npx playwright install-deps
    npx playwright install
    ```
 
