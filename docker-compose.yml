@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  video-analyzer:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - OVH_AI_TOKEN=${OVH_AI_TOKEN}
+      - NODE_ENV=production
+    volumes:
+      - ./reports:/app/reports
+      - ./settings.json:/app/settings.json
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add a reverse proxy for production deployments
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #     - ./ssl:/etc/nginx/ssl
+  #   depends_on:
+  #     - video-analyzer
+  #   restart: unless-stopped

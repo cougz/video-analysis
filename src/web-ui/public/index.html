@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Analyzer - AI-Powered Video Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <i data-lucide="video"></i>
+                    Video Analyzer
+                </h1>
+                <p class="subtitle">AI-Powered Video Analysis with Real-time Automation</p>
+            </div>
+            <div class="header-actions">
+                <button id="settingsBtn" class="btn btn-secondary">
+                    <i data-lucide="settings"></i>
+                    Settings
+                </button>
+                <div class="status-indicator" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- Prompt Section -->
+            <section class="prompt-section">
+                <div class="section-header">
+                    <h2>What would you like me to analyze?</h2>
+                    <p>Describe what you want to analyze, and I'll navigate to the video and provide insights.</p>
+                </div>
+                
+                <div class="prompt-form">
+                    <div class="form-group">
+                        <label for="promptInput">Analysis Prompt</label>
+                        <textarea 
+                            id="promptInput" 
+                            placeholder="Example: Go to YouTube and analyze the latest JavaScript tutorial on React hooks. Summarize the key concepts and provide timestamps for important sections."
+                            rows="4"
+                        ></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="urlInput">Direct Video URL (Optional)</label>
+                        <input 
+                            type="url" 
+                            id="urlInput" 
+                            placeholder="https://youtube.com/watch?v=... (optional - I can search if not provided)"
+                        >
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button id="analyzeBtn" class="btn btn-primary" disabled>
+                            <i data-lucide="play"></i>
+                            Start Analysis
+                        </button>
+                        <button id="stopBtn" class="btn btn-danger" style="display: none;">
+                            <i data-lucide="square"></i>
+                            Stop Analysis
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Playback Viewer Section -->
+            <section class="playback-section">
+                <div class="section-header">
+                    <h2>Live Automation Viewer</h2>
+                    <p>Watch what the AI is doing in real-time</p>
+                </div>
+                
+                <div class="playback-viewer">
+                    <div class="viewer-container">
+                        <div class="viewer-placeholder" id="viewerPlaceholder">
+                            <i data-lucide="monitor"></i>
+                            <p>Analysis will appear here when started</p>
+                        </div>
+                        <img id="currentFrame" src="" alt="Current automation frame" style="display: none;">
+                    </div>
+                    
+                    <div class="viewer-controls">
+                        <div class="status-bar">
+                            <div class="status-info">
+                                <span class="status-label">Status:</span>
+                                <span id="statusText" class="status-value">Ready</span>
+                            </div>
+                            <div class="progress-info">
+                                <span class="progress-label">Progress:</span>
+                                <span id="progressText" class="progress-value">0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                        
+                        <div class="action-info">
+                            <span id="currentAction">Waiting for analysis to start...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="section-header">
+                    <h2>Analysis Results</h2>
+                    <div class="section-actions">
+                        <button id="exportBtn" class="btn btn-secondary">
+                            <i data-lucide="download"></i>
+                            Export Results
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="results-container">
+                    <div class="results-content" id="resultsContent">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active Sessions Section -->
+            <section class="sessions-section">
+                <div class="section-header">
+                    <h2>Active Sessions</h2>
+                    <button id="refreshSessionsBtn" class="btn btn-secondary btn-sm">
+                        <i data-lucide="refresh-cw"></i>
+                        Refresh
+                    </button>
+                </div>
+                
+                <div class="sessions-list" id="sessionsList">
+                    <!-- Sessions will be populated here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button id="closeSettingsBtn" class="btn-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="browser">Browser</button>
+                    <button class="tab-btn" data-tab="analysis">Analysis</button>
+                    <button class="tab-btn" data-tab="ai">AI</button>
+                    <button class="tab-btn" data-tab="capture">Capture</button>
+                </div>
+                
+                <div class="settings-content">
+                    <!-- Browser Settings -->
+                    <div id="browserTab" class="tab-content active">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="headlessMode">
+                                Run browser in headless mode
+                            </label>
+                            <small>Headless mode runs the browser without a visible window (faster)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="browserTimeout">Browser Timeout (ms)</label>
+                            <input type="number" id="browserTimeout" min="5000" step="1000">
+                            <small>Maximum time to wait for page loads</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="screenshotQuality">Screenshot Quality</label>
+                            <input type="range" id="screenshotQuality" min="1" max="100" step="1">
+                            <span id="qualityValue">80</span>%
+                            <small>Higher quality = larger file sizes</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Analysis Settings -->
+                    <div id="analysisTab" class="tab-content">
+                        <div class="form-group">
+                            <label for="captureIntervals">Capture Intervals (seconds)</label>
+                            <input type="number" id="captureIntervals" min="1" step="1">
+                            <small>How often to capture frames during video playback</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="frameStrategy">Frame Capture Strategy</label>
+                            <select id="frameStrategy">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                            <small>How to decide which frames to analyze</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="analysisTimeout">Analysis Timeout (ms)</label>
+                            <input type="number" id="analysisTimeout" min="10000" step="1000">
+                            <small>Maximum time for the entire analysis</small>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Settings -->
+                    <div id="aiTab" class="tab-content">
+                        <div class="form-group">
+                            <label for="temperature">AI Temperature</label>
+                            <input type="range" id="temperature" min="0" max="2" step="0.1">
+                            <span id="temperatureValue">0.1</span>
+                            <small>Higher values make output more creative, lower values more focused</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="maxTokens">Max Tokens</label>
+                            <input type="number" id="maxTokens" min="100" step="100">
+                            <small>Maximum length of AI response</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Capture Settings -->
+                    <div id="captureTab" class="tab-content">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="enableScreenshots">
+                                Enable screenshots in results
+                            </label>
+                            <small>Include screenshots in the analysis results</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="screenshotFormat">Screenshot Format</label>
+                            <select id="screenshotFormat">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                            <small>Image format for captured screenshots</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="resetSettingsBtn" class="btn btn-secondary">
+                    Reset to Defaults
+                </button>
+                <button id="saveSettingsBtn" class="btn btn-primary">
+                    Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

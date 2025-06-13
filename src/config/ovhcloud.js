@@ -5,12 +5,12 @@ dotenv.config();
 
 export class OVHCloudClient {
   constructor() {
-    this.baseURL = process.env.OVH_AI_ENDPOINTS_URL;
+    this.baseURL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net';
     this.apiToken = process.env.OVH_AI_TOKEN;
-    this.timeout = parseInt(process.env.ANALYSIS_TIMEOUT) || 60000;
+    this.timeout = 60000; // Default timeout
     
-    if (!this.baseURL || !this.apiToken) {
-      throw new Error('OVHcloud AI configuration missing. Please check your .env file.');
+    if (!this.apiToken) {
+      throw new Error('OVH_AI_TOKEN is required. Please check your .env file.');
     }
 
     this.client = axios.create({

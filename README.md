@@ -1,330 +1,208 @@
-# Video Learning Platform Analysis System
+# Video Analyzer - AI-Powered Video Analysis
 
-An automated system that uses Midscene.js to navigate learning platforms and leverages OVHcloud's Qwen2.5-VL model to analyze educational content for quality, technical accuracy, and educational effectiveness.
+A modern web application that uses AI to analyze videos through intelligent browser automation. Built with OVHcloud AI (Qwen2.5-VL-72B-Instruct) and Midscene.js for real-time web scraping.
 
-## 🚀 Features
+## Features
 
-- **Automated Platform Navigation**: Supports Udemy, Coursera, edX, Pluralsight, LinkedIn Learning, and generic platforms
-- **Intelligent Content Capture**: Strategic screenshot capture of video frames, code examples, assessments, and course materials
-- **AI-Powered Analysis**: Uses OVHcloud's Qwen2.5-VL model for comprehensive content analysis
-- **Multi-Format Reports**: Generates HTML, JSON, and PDF reports with actionable insights
-- **Cost-Optimized**: Leverages Qwen2.5-VL for 30-50% token savings compared to GPT-4
+- 🎯 **Natural Language Prompts**: Simply describe what you want to analyze
+- 🤖 **AI-Powered Navigation**: Automatically finds and navigates to videos
+- 📺 **Real-time Automation Viewer**: Watch the AI work in real-time
+- ⚙️ **Configurable Settings**: Customize browser, analysis, and AI parameters
+- 🔗 **WebSocket Live Updates**: Real-time progress and screenshot streaming
+- 📊 **Comprehensive Analysis**: Multiple capture strategies and detailed reports
 
-## 📋 Prerequisites
+## Quick Start
+
+### Prerequisites
 
 - Node.js 18+
-- OVHcloud AI Endpoints account and API token
-- Learning platform credentials (optional but recommended)
+- OVHcloud AI API token
 
-## 🛠️ Installation
+### Installation
 
-1. **Clone and setup the project:**
+1. **Clone and install dependencies:**
    ```bash
    git clone <repository-url>
    cd video-analysis
    npm install
    ```
 
-   **Note**: If you encounter missing dependencies (jest, dotenv, etc.), ensure all dependencies are installed:
-   ```bash
-   npm install jest dotenv @midscene/web@0.19.0 playwright axios fs-extra sharp pdf-lib handlebars node-cron
-   npm install --save-dev jest eslint prettier @types/node
-   ```
-
-2. **Configure environment variables:**
+2. **Configure environment:**
    ```bash
    cp .env.example .env
-   # Edit .env with your credentials
+   # Edit .env and add your OVH_AI_TOKEN
    ```
 
-3. **Install Playwright browsers:**
+3. **Start the application:**
    ```bash
-   npx playwright install-deps
-   npx playwright install
+   npm run web-server
    ```
 
-## ⚙️ Configuration
+4. **Open your browser:**
+   Navigate to `http://localhost:3000`
 
-### Required Environment Variables
+## Usage
+
+### Basic Analysis
+
+1. Enter a natural language prompt:
+   ```
+   "Go to YouTube and analyze the latest JavaScript tutorial on React hooks. 
+   Summarize the key concepts and provide timestamps for important sections."
+   ```
+
+2. Optionally provide a direct video URL
+
+3. Click "Start Analysis" and watch the real-time automation
+
+4. Review the AI-generated analysis results
+
+### Configuration
+
+Access the Settings panel to configure:
+
+- **Browser Settings**: Headless mode, timeouts, screenshot quality
+- **Analysis Settings**: Capture intervals, frame strategies, timeouts
+- **AI Settings**: Temperature, max tokens, model parameters
+- **Capture Settings**: Screenshot formats and quality
+
+### Frame Capture Strategies
+
+- **Comprehensive**: Captures many frames for detailed analysis
+- **Summary**: Captures key moments (beginning, middle, end)
+- **Timeline**: Captures at regular intervals
+
+## Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+1. **Create environment file:**
+   ```bash
+   echo "OVH_AI_TOKEN=your_token_here" > .env
+   ```
+
+2. **Deploy:**
+   ```bash
+   docker-compose up -d
+   ```
+
+### Using Docker directly
 
 ```bash
-# OVHcloud AI Endpoints Configuration
-OVH_AI_ENDPOINTS_URL=https://qwen25-vl-72b-instruct.endpoints.kepler.ai.cloud.ovh.net
-OVH_AI_TOKEN=your_ovh_ai_token_here
-
-# Learning Platform Credentials (optional)
-PLATFORM_USERNAME=your_username
-PLATFORM_PASSWORD=your_password
+docker build -t video-analyzer .
+docker run -p 3000:3000 -e OVH_AI_TOKEN=your_token video-analyzer
 ```
 
-### Optional Configuration
+## API Reference
 
-```bash
-# Browser Configuration
-BROWSER_HEADLESS=true
-BROWSER_TIMEOUT=30000
-SCREENSHOT_QUALITY=80
+### Analysis Endpoints
 
-# Analysis Configuration
-CAPTURE_INTERVALS=5
-MAX_CONCURRENT_ANALYSES=3
-ANALYSIS_TIMEOUT=60000
+- `POST /api/analyze` - Start new analysis
+- `GET /api/analyze/status/:id` - Get analysis status
+- `GET /api/analyze/results/:id` - Get analysis results
+- `DELETE /api/analyze/:id` - Cancel analysis
+- `GET /api/analyze/sessions` - List active sessions
 
-# Report Configuration
-REPORT_FORMAT=html,json,pdf
-REPORT_OUTPUT_DIR=./reports
-ENABLE_SCREENSHOTS_IN_REPORTS=true
-```
+### Settings Endpoints
 
-## 🎯 Quick Start
+- `GET /api/settings` - Get current settings
+- `POST /api/settings` - Update settings
+- `POST /api/settings/reset` - Reset to defaults
+- `GET /api/settings/options` - Get available options
 
-### Analyze a Single Course
+### WebSocket Events
 
-```bash
-npm start "https://udemy.com" "JavaScript Fundamentals"
-```
+Connect to `ws://localhost:3000` for real-time updates:
 
-### Programmatic Usage
+- `screenshot` - Live automation screenshots
+- `progress` - Analysis progress updates
+- `status` - Status changes
+- `session_update` - Session state changes
 
-```javascript
-import VideoLearningAnalyzer from './src/index.js';
+## Configuration
 
-const analyzer = new VideoLearningAnalyzer();
+### Environment Variables
 
-async function analyzeCourse() {
-  // Initialize the analyzer
-  await analyzer.initialize();
-  
-  // Analyze a course
-  const result = await analyzer.analyzeCourse(
-    'https://coursera.org',
-    'Machine Learning Course',
-    {
-      captureCode: true,
-      captureAssessments: true,
-      optimizeImages: true
-    }
-  );
-  
-  if (result.success) {
-    console.log('Analysis completed!');
-    console.log('Reports:', result.reports);
+- `OVH_AI_TOKEN` - OVHcloud AI API token (required)
+- `PORT` - Server port (default: 3000)
+- `NODE_ENV` - Environment mode
+
+### Settings File
+
+All other settings are configured via the WebUI and stored in `settings.json`:
+
+```json
+{
+  "browser": {
+    "headless": true,
+    "timeout": 30000,
+    "screenshotQuality": 80
+  },
+  "analysis": {
+    "captureIntervals": 5,
+    "frameStrategy": "comprehensive",
+    "analysisTimeout": 60000
+  },
+  "ai": {
+    "temperature": 0.1,
+    "maxTokens": 2000
   }
-  
-  // Clean up
-  await analyzer.close();
-}
-
-analyzeCourse().catch(console.error);
-```
-
-## 📊 Analysis Types
-
-The system performs four types of analysis on captured content:
-
-### 1. Technical Accuracy Analysis
-- Correctness of presented information
-- Accuracy of code examples
-- Proper use of terminology
-- Conceptual clarity
-
-### 2. Visual Quality Analysis
-- Clarity of diagrams and illustrations
-- Readability of text and code
-- Professional appearance
-- Effective use of visual aids
-
-### 3. Educational Value Analysis
-- Clear learning objectives
-- Logical content progression
-- Appropriate examples and exercises
-- Student engagement level
-
-### 4. Content Extraction
-- Main topics covered
-- Key concepts explained
-- Code examples identification
-- Assessment questions
-
-## 📈 Report Formats
-
-### HTML Report
-Interactive web-based report with:
-- Executive summary dashboard
-- Detailed analysis sections
-- Visual metrics and scores
-- Embedded screenshots (optional)
-- Actionable recommendations
-
-### JSON Report
-Machine-readable format containing:
-- Raw analysis data
-- Structured metrics
-- Timestamps and metadata
-- API response details
-
-### PDF Report
-Printable summary report with:
-- Key findings overview
-- Critical issues highlight
-- Recommendation summary
-- Professional formatting
-
-## 🏗️ Architecture
-
-```
-src/
-├── automation/         # Midscene.js automation
-│   └── midscene-client.js
-├── analysis/          # AI analysis engine
-│   └── vlm-analyzer.js
-├── navigation/        # Platform-specific navigation
-│   └── platform-navigator.js
-├── capture/           # Content capture strategies
-│   └── content-capture.js
-├── reports/           # Report generation
-│   └── report-generator.js
-├── config/            # Configuration management
-│   ├── index.js
-│   └── ovhcloud.js
-└── index.js           # Main orchestrator
-```
-
-## 🔧 Advanced Usage
-
-### Custom Analysis Options
-
-```javascript
-const options = {
-  captureCode: true,           // Capture code examples
-  captureAssessments: false,   // Skip assessments
-  captureFullPage: true,       // Capture full page context
-  optimizeImages: true,        // Optimize captured images
-  maxConcurrent: 5            // Max concurrent analyses
-};
-
-const result = await analyzer.analyzeCourse(url, courseName, options);
-```
-
-### Batch Course Analysis
-
-```javascript
-const courses = [
-  'JavaScript Fundamentals',
-  'Advanced React Patterns',
-  'Node.js Masterclass'
-];
-
-for (const course of courses) {
-  const result = await analyzer.analyzeCourse(platformUrl, course);
-  console.log(`${course}: ${result.success ? 'Success' : 'Failed'}`);
 }
 ```
 
-### Learning Path Analysis
+## Architecture
 
-```javascript
-const pathResult = await analyzer.analyzeLearningPath(
-  'https://udemy.com',
-  'Full Stack Developer Path'
-);
-```
+- **Frontend**: Modern vanilla JavaScript with WebSocket integration
+- **Backend**: Express.js with WebSocket support
+- **Automation**: Midscene.js with Playwright
+- **AI**: OVHcloud AI (Qwen2.5-VL-72B-Instruct)
+- **Real-time**: WebSocket for live updates and screenshots
 
-## 🧪 Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run specific test file
-npm test tests/analyzer.test.js
-```
-
-## 📊 Cost Optimization
-
-- **Smart Caching**: Avoid duplicate analyses with intelligent caching
-- **Batch Processing**: Optimize API calls through efficient batching
-- **Strategic Capture**: Intelligent screenshot selection to minimize API usage
-- **Qwen2.5-VL**: 30-50% token savings compared to GPT-4
-
-## 🔒 Security & Privacy
-
-- Credentials stored securely in environment variables
-- No sensitive data logged or stored
-- Session management for authentication
-- Secure API token handling
-
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-1. **Authentication Failed**
-   ```bash
-   # Check credentials in .env file
-   # Verify platform allows automated login
-   # Try manual login to verify credentials
-   ```
-
-2. **OVHcloud API Errors**
-   ```bash
-   # Verify API token is valid
-   # Check endpoint URL configuration
-   # Monitor rate limiting
-   ```
-
-3. **Navigation Issues**
-   ```bash
-   # Platform UI may have changed
-   # Check if course name is exact
-   # Verify platform is supported
-   ```
+1. **AI connection fails**: Check your OVH_AI_TOKEN is valid
+2. **Browser automation fails**: Ensure sufficient system resources
+3. **WebSocket disconnects**: Check firewall settings
 
 ### Debug Mode
 
-```bash
-# Enable verbose logging
-LOG_LEVEL=debug npm start <url> <course>
+Set `NODE_ENV=development` for verbose logging.
 
-# Run with browser visible
-BROWSER_HEADLESS=false npm start <url> <course>
+### Rate Limits
+
+OVHcloud AI has a rate limit of 400 requests/minute. The application includes automatic retry logic with exponential backoff.
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── web-ui/           # WebUI components
+│   ├── public/       # Frontend files
+│   └── routes/       # API routes
+├── automation/       # Midscene automation
+├── analysis/         # AI analysis logic
+├── config/           # Configuration
+└── web-server.js     # Main server
 ```
 
-## 📈 Performance Metrics
-
-Typical performance for a 1-hour course:
-- **Analysis Time**: 5-10 minutes
-- **Screenshots**: 15-25 captures
-- **API Calls**: 50-100 requests
-- **Cost**: ~$0.30-0.50 per course
-- **Report Size**: 2-5MB (with screenshots)
-
-## 🤝 Contributing
+### Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests for new functionality
+4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+## License
 
-MIT License - see LICENSE file for details
+MIT License - see LICENSE file for details.
 
-## 🆘 Support
+## Support
 
-- Check the troubleshooting section
-- Review the example usage
-- Open an issue for bugs or feature requests
-- Consult OVHcloud AI documentation for API issues
-
-## 🔮 Roadmap
-
-- [ ] Support for more learning platforms
-- [ ] Real-time analysis monitoring
-- [ ] Advanced content comparison features
-- [ ] Integration with LMS APIs
-- [ ] Machine learning model for quality prediction
-- [ ] Mobile platform support
+- 📧 Issues: Use GitHub Issues
+- 📚 Documentation: This README
+- 🔧 Configuration: WebUI Settings panel

@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "web-server": "node src/web-server.js",
+    "dev": "node --watch src/web-server.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src/",
@@ -16,13 +17,17 @@
     "@midscene/web": "^0.19.0",
     "@playwright/test": "^1.53.0",
     "axios": "^1.9.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
+    "express": "^4.21.2",
     "fs-extra": "^11.3.0",
     "handlebars": "^4.7.8",
     "node-cron": "^3.0.3",
     "pdf-lib": "^1.17.1",
     "playwright": "^1.53.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "uuid": "^11.0.3",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

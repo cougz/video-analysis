@@ -4,26 +4,35 @@ import { ovhClient } from '../config/ovhcloud.js';
 import config from '../config/index.js';
 
 export class MidsceneClient {
-  constructor() {
+  constructor(options = {}) {
     this.browser = null;
     this.page = null;
     this.agent = null;
     this.initialized = false;
+    
+    // WebUI integration callbacks
+    this.onProgress = options.onProgress || (() => {});
+    this.onScreenshot = options.onScreenshot || (() => {});
+    this.onStatus = options.onStatus || (() => {});
+    this.settings = options.settings || {};
   }
 
   async initialize() {
     try {
       // Configure Midscene AI settings before initialization
       overrideAIConfig({
-        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-        OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
-        MIDSCENE_MODEL_NAME: process.env.MIDSCENE_MODEL_NAME
+        OPENAI_API_KEY: process.env.OVH_AI_TOKEN,
+        OPENAI_BASE_URL: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
+        MIDSCENE_MODEL_NAME: 'Qwen2.5-VL-72B-Instruct'
       });
 
+      // Use settings from WebUI or defaults
+      const browserSettings = this.settings.browser || {};
+      
       // Initialize Playwright browser
       this.browser = await chromium.launch({
-        headless: config.browser.headless,
-        timeout: config.browser.timeout
+        headless: browserSettings.headless !== false, // Default to true
+        timeout: browserSettings.timeout || 30000
       });
 
       // Create new page
@@ -34,10 +43,12 @@ export class MidsceneClient {
 
       this.initialized = true;
       console.log('Midscene client initialized successfully');
+      this.onStatus('initialized', 'Midscene client ready');
       
       return { success: true };
     } catch (error) {
       console.error('Failed to initialize Midscene client:', error);
+      this.onStatus('error', `Initialization failed: ${error.message}`);
       return { success: false, error: error.message };
     }
   }
@@ -48,11 +59,19 @@ export class MidsceneClient {
     }
 
     try {
+      this.onStatus('navigating', `Navigating to ${url}`);
+      
       await this.page.goto(url, { waitUntil: 'networkidle' });
       console.log(`Navigated to: ${url}`);
+      
+      // Capture screenshot after navigation
+      await this.captureAndBroadcastScreenshot(`Navigated to ${url}`);
+      
+      this.onStatus('navigated', `Successfully navigated to ${url}`);
       return { success: true };
     } catch (error) {
       console.error(`Navigation failed: ${error.message}`);
+      this.onStatus('error', `Navigation failed: ${error.message}`);
       return { success: false, error: error.message };
     }
   }
@@ -117,9 +136,12 @@ export class MidsceneClient {
 
   async takeScreenshot(options = {}) {
     try {
+      const captureSettings = this.settings.capture || {};
+      const browserSettings = this.settings.browser || {};
+      
       const screenshot = await this.page.screenshot({
-        quality: config.browser.screenshotQuality,
-        type: 'png',
+        quality: browserSettings.screenshotQuality || 80,
+        type: captureSettings.screenshotFormat || 'png',
         fullPage: options.fullPage || false
       });
       
@@ -127,6 +149,18 @@ export class MidsceneClient {
     } catch (error) {
       console.error(`Screenshot failed: ${error.message}`);
       return { success: false, error: error.message };
+    }
+  }
+
+  async captureAndBroadcastScreenshot(action) {
+    try {
+      const result = await this.takeScreenshot();
+      if (result.success) {
+        const base64Screenshot = result.screenshot.toString('base64');
+        this.onScreenshot(base64Screenshot, action);
+      }
+    } catch (error) {
+      console.error('Error capturing screenshot:', error);
     }
   }
 
