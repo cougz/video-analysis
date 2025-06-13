@@ -15,6 +15,7 @@ export const config = {
     browser: {
       headless: true,
       timeout: 30000,
+      navigationTimeout: 60000,
       screenshotQuality: 80
     },
     analysis: {

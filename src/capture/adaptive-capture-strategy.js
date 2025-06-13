@@ -20,7 +20,7 @@ export class AdaptiveCaptureStrategy {
     
     try {
       // Use AI to analyze the request and determine optimal capture strategy
-      const strategyAnalysis = await this.client.ai(`
+      const strategyAnalysis = await this.client.agent.ai(`
         I need to capture frames from a video to analyze: "${userPrompt}"
         
         Video information:
@@ -316,7 +316,7 @@ export class AdaptiveCaptureStrategy {
       console.log(`🔍 Waiting for event: ${capturePoint.description}`);
       
       // Use AI to detect the specified event
-      const eventDetected = await this.client.ai(`
+      const eventDetected = await this.client.agent.ai(`
         I'm looking for this event in the video: "${capturePoint.description}"
         
         Watch the current video frame and tell me:
@@ -385,7 +385,7 @@ export class AdaptiveCaptureStrategy {
         
         // Use AI to detect if this is a new slide
         if (previousFrame) {
-          const slideChangeDetection = await this.client.ai(`
+          const slideChangeDetection = await this.client.agent.ai(`
             Compare these two frames to detect if there's a slide transition.
             
             Look for:

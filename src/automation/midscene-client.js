@@ -1,7 +1,5 @@
 import { PlaywrightAgent, overrideAIConfig } from '@midscene/web/playwright';
 import { chromium } from 'playwright';
-import { ovhClient } from '../config/ovhcloud.js';
-import config from '../config/index.js';
 
 export class MidsceneClient {
   constructor(options = {}) {
@@ -38,8 +36,11 @@ export class MidsceneClient {
       // Create new page
       this.page = await this.browser.newPage();
       
-      // Initialize PlaywrightAgent
-      this.agent = new PlaywrightAgent(this.page);
+      // Initialize PlaywrightAgent with timeout settings
+      this.agent = new PlaywrightAgent(this.page, {
+        waitForNavigationTimeout: 30000, // Increase to 30 seconds
+        waitForNetworkIdleTimeout: 15000  // Increase to 15 seconds
+      });
 
       this.initialized = true;
       console.log('Midscene client initialized successfully');
@@ -61,7 +62,10 @@ export class MidsceneClient {
     try {
       this.onStatus('navigating', `Navigating to ${url}`);
       
-      await this.page.goto(url, { waitUntil: 'networkidle' });
+      await this.page.goto(url, { 
+        waitUntil: 'networkidle',
+        timeout: 60000 // Increase timeout to 60 seconds
+      });
       console.log(`Navigated to: ${url}`);
       
       // Capture screenshot after navigation
@@ -139,11 +143,17 @@ export class MidsceneClient {
       const captureSettings = this.settings.capture || {};
       const browserSettings = this.settings.browser || {};
       
-      const screenshot = await this.page.screenshot({
-        quality: browserSettings.screenshotQuality || 80,
+      const screenshotOptions = {
         type: captureSettings.screenshotFormat || 'png',
         fullPage: options.fullPage || false
-      });
+      };
+      
+      // Only add quality for JPEG format
+      if (screenshotOptions.type === 'jpeg') {
+        screenshotOptions.quality = browserSettings.screenshotQuality || 80;
+      }
+      
+      const screenshot = await this.page.screenshot(screenshotOptions);
       
       return { success: true, screenshot };
     } catch (error) {
@@ -192,7 +202,7 @@ export class MidsceneClient {
     }
   }
 
-  async waitForVideoStable(timeout = 2000) {
+  async waitForVideoStable(_timeout = 2000) {
     try {
       await this.agent.ai('wait for video frame to be stable and fully loaded');
       return { success: true };

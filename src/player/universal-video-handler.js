@@ -10,7 +10,7 @@ export class UniversalVideoHandler {
       console.log('🎥 Detecting video player...');
       
       // Use AI to analyze the page and identify video player
-      const playerAnalysis = await this.client.ai(`
+      const playerAnalysis = await this.client.agent.ai(`
         Analyze this page and identify any video player. Tell me:
         1. What type of video player is present? (YouTube, Vimeo, HTML5, custom player, etc.)
         2. Where are the video controls located?
@@ -52,7 +52,7 @@ export class UniversalVideoHandler {
   async analyzePlayerCapabilities() {
     try {
       // Use AI to understand what we can do with this player
-      const capabilityAnalysis = await this.client.ai(`
+      const capabilityAnalysis = await this.client.agent.ai(`
         Look at the video player on this page and identify:
         1. Is there a play button? Where is it?
         2. Is there a pause button? Where is it?
@@ -87,7 +87,7 @@ export class UniversalVideoHandler {
   async identifyPlayerType() {
     try {
       // Use AI to identify the specific type of player
-      const typeIdentification = await this.client.ai(`
+      const typeIdentification = await this.client.agent.ai(`
         What type of video player is this? Look for:
         - YouTube player (has YouTube logo, red progress bar)
         - Vimeo player (Vimeo branding, blue elements)
@@ -115,7 +115,7 @@ export class UniversalVideoHandler {
     try {
       console.log('▶️ Playing video...');
       
-      const result = await this.client.ai(`
+      const result = await this.client.agent.ai(`
         Find and click the play button on the video player.
         Look for:
         - Triangle/arrow pointing right
@@ -138,7 +138,7 @@ export class UniversalVideoHandler {
     try {
       console.log('⏸️ Pausing video...');
       
-      const result = await this.client.ai(`
+      const result = await this.client.agent.ai(`
         Find and click the pause button on the video player.
         Look for:
         - Two vertical bars (pause icon)
@@ -161,7 +161,7 @@ export class UniversalVideoHandler {
     try {
       console.log(`⏩ Seeking to ${percentage}%...`);
       
-      const result = await this.client.ai(`
+      const result = await this.client.agent.ai(`
         I want to seek the video to ${percentage}% of its duration.
         
         Find the progress bar or seek bar and click at the position that represents ${percentage}% of the total length.
@@ -183,7 +183,7 @@ export class UniversalVideoHandler {
     try {
       console.log(`🔊 Setting volume to ${level}%...`);
       
-      const result = await this.client.ai(`
+      const result = await this.client.agent.ai(`
         I want to set the video volume to ${level}%.
         
         Find the volume control (usually a speaker icon with a slider) and adjust it to ${level}%.
@@ -201,7 +201,7 @@ export class UniversalVideoHandler {
 
   async getCurrentTime() {
     try {
-      const timeInfo = await this.client.ai(`
+      const timeInfo = await this.client.agent.ai(`
         Look at the video player and find the current time display.
         Usually shows format like "2:30" or "0:45" or "1:23:45".
         
@@ -221,7 +221,7 @@ export class UniversalVideoHandler {
 
   async getDuration() {
     try {
-      const durationInfo = await this.client.ai(`
+      const durationInfo = await this.client.agent.ai(`
         Look at the video player and find the total duration display.
         Usually shows format like "10:30" or "1:45:20" representing the total video length.
         
@@ -241,7 +241,7 @@ export class UniversalVideoHandler {
 
   async isPlaying() {
     try {
-      const playingStatus = await this.client.ai(`
+      const playingStatus = await this.client.agent.ai(`
         Look at the video player and determine:
         1. Is the video currently playing? (look for pause button visible)
         2. Is the video paused? (look for play button visible)
@@ -264,7 +264,7 @@ export class UniversalVideoHandler {
       console.log('⏳ Waiting for video to stabilize...');
       
       // Use AI to detect when video is stable and ready
-      const stabilityCheck = await this.client.ai(`
+      const stabilityCheck = await this.client.agent.ai(`
         Check if the video is stable and ready:
         1. Is the video loaded and not buffering?
         2. Are the controls visible and responsive?
@@ -293,7 +293,7 @@ export class UniversalVideoHandler {
       console.log('📸 Capturing current video frame...');
       
       // First ensure video area is visible
-      await this.client.ai('Make sure the video player is visible on screen');
+      await this.client.agent.ai('Make sure the video player is visible on screen');
       
       // Take screenshot of the video area
       const screenshot = await this.client.takeScreenshot();
@@ -343,7 +343,7 @@ export class UniversalVideoHandler {
 
     try {
       // Handle platform-specific features dynamically
-      const featureAnalysis = await this.client.ai(`
+      const featureAnalysis = await this.client.agent.ai(`
         This is a ${this.playerInfo.type} video player. 
         What special features or controls are unique to this type of player?
         
