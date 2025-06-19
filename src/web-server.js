@@ -177,21 +177,36 @@ server.listen(PORT, () => {
   console.log(`🔍 Open http://localhost:${PORT} in your browser to get started`);
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+// Graceful shutdown function
+function gracefulShutdown(signal) {
+  console.log(`${signal} received, shutting down gracefully...`);
+  
+  // Close WebSocket server first
+  wss.close(() => {
+    console.log('WebSocket server closed');
+  });
+  
+  // Close all active WebSocket connections
+  wsClients.forEach((ws, clientId) => {
+    console.log(`Closing WebSocket connection: ${clientId}`);
+    ws.terminate();
+  });
+  wsClients.clear();
+  
+  // Close HTTP server
   server.close(() => {
-    console.log('Server closed');
+    console.log('HTTP server closed');
     process.exit(0);
   });
-});
+  
+  // Force exit after 5 seconds if server doesn't close
+  setTimeout(() => {
+    console.log('Force closing server after timeout');
+    process.exit(1);
+  }, 5000);
+}
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export { app, server, wss, activeSessions, wsClients };

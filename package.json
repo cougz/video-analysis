@@ -10,6 +10,10 @@
     "dev": "node --watch src/web-server.js",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:auto": "node run-tests.js",
+    "test:quick": "node run-tests.js quick",
+    "test:cookies": "node run-tests.js cookies",
+    "test:all": "node run-tests.js all",
     "lint": "eslint src/",
     "format": "prettier --write src/"
   },

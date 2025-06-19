@@ -141,6 +141,9 @@ export class ContentAgnosticVideoAnalyzer {
       this.onProgress(30, 'Detecting video player...');
       this.onStatus('detecting', 'Detecting video player controls');
       
+      // Handle any additional cookie consents that might appear
+      await this.midsceneClient.handleCookieConsent();
+      
       const videoControls = await this.videoHandler.detectAndControlVideo();
       if (!videoControls) {
         throw new Error('Failed to detect and initialize video player controls');

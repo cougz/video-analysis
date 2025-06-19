@@ -54,6 +54,69 @@ export class MidsceneClient {
     }
   }
 
+  async handleCookieConsent() {
+    try {
+      this.onStatus('checking', 'Checking for cookie consent dialog');
+      
+      // Common cookie consent patterns to look for
+      const cookiePatterns = [
+        'Accept all',
+        'Accept All',
+        'Accept All Cookies',
+        'Accept cookies',
+        'Accept',
+        'I agree',
+        'Agree',
+        'OK',
+        'Continue',
+        'Allow all',
+        'Allow All',
+        'Agree and continue',
+        'Dismiss',
+        'Close',
+        'Got it',
+        'Understood'
+      ];
+      
+      // Try each pattern until one works
+      for (const pattern of cookiePatterns) {
+        try {
+          console.log(`Trying to find and click: "${pattern}"`);
+          await this.agent.ai(`look for a button or link with text "${pattern}" and click it if found`, {
+            timeout: 3000
+          });
+          
+          // Wait a moment for the dialog to disappear
+          await this.page.waitForTimeout(1000);
+          
+          console.log(`Successfully clicked cookie consent: "${pattern}"`);
+          this.onStatus('consent-handled', `Accepted cookies with: ${pattern}`);
+          return { success: true, method: pattern };
+        } catch (error) {
+          // Continue to next pattern if this one fails
+          console.log(`Pattern "${pattern}" not found or failed, trying next...`);
+          continue;
+        }
+      }
+      
+      // If no patterns worked, try generic approach
+      try {
+        await this.agent.ai('look for any cookie banner, consent dialog, or privacy notice and dismiss it by clicking the most appropriate accept button', {
+          timeout: 5000
+        });
+        console.log('Cookie consent handled with generic approach');
+        this.onStatus('consent-handled', 'Cookie consent handled generically');
+        return { success: true, method: 'generic' };
+      } catch (error) {
+        console.log('No cookie consent dialog found or unable to handle it');
+        return { success: false, error: 'No cookie consent found' };
+      }
+    } catch (error) {
+      console.error(`Cookie consent handling failed: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
   async navigateToUrl(url) {
     if (!this.initialized) {
       throw new Error('Midscene client not initialized');
@@ -70,6 +133,12 @@ export class MidsceneClient {
       
       // Capture screenshot after navigation
       await this.captureAndBroadcastScreenshot(`Navigated to ${url}`);
+      
+      // Handle cookie consent automatically
+      await this.handleCookieConsent();
+      
+      // Take another screenshot after cookie handling
+      await this.captureAndBroadcastScreenshot(`After cookie consent handling`);
       
       this.onStatus('navigated', `Successfully navigated to ${url}`);
       return { success: true };
@@ -171,6 +240,28 @@ export class MidsceneClient {
       }
     } catch (error) {
       console.error('Error capturing screenshot:', error);
+    }
+  }
+
+  async executeUserPrompt(prompt) {
+    try {
+      this.onStatus('executing', `Executing: ${prompt}`);
+      
+      // First handle any cookie consent that might appear
+      await this.handleCookieConsent();
+      
+      // Execute the user's prompt
+      const result = await this.agent.ai(prompt);
+      
+      // Capture screenshot after execution
+      await this.captureAndBroadcastScreenshot(`Executed: ${prompt}`);
+      
+      this.onStatus('completed', `Completed: ${prompt}`);
+      return { success: true, result };
+    } catch (error) {
+      console.error(`Prompt execution failed: ${error.message}`);
+      this.onStatus('error', `Execution failed: ${error.message}`);
+      return { success: false, error: error.message };
     }
   }
 
